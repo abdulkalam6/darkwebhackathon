@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Analyzer - Result</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Add Favicon -->
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            /* Light gray background color */
+        }
+
+        .container {
+            background-color: #ffffff;
+            /* White container background color */
+            padding: 20px;
+            /* Add padding to the container */
+            border-radius: 8px;
+            /* Add border radius to the container */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            /* Add a subtle box shadow */
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            /* Blue heading color */
+        }
+
+        img {
+    max-width: 50%;
+    /* Make sure the image doesn't exceed its container */
+    height: 500px;
+    /* Maintain the aspect ratio of the image */
+    margin: 20px auto;
+    margin-left: 27%;
+    /* Add spacing below the image and center horizontally */
+
+    border-radius: 10px;
+}
+
+        .card {
+            margin-top: 20px;
+            /* Add spacing above the card */
+        }
+
+        .list-group-item {
+            background-color: #f8f9fa;
+            /* Light gray background color for list items */
+            border: none;
+            /* Remove border */
+        }
+
+        .text-danger {
+            color: #dc3545;
+            /* Red text color for danger messages */
+        }
+
+        .text-success {
+            color: #28a745;
+            /* Green text color for success messages */
+        }
+        .card-title {
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase; 
+    color: darkorchid;
+    text-decoration: underline;
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <a href="/" class="btn btn-primary">Back</a>
+        <h1 class="mb-4">Product Analysis Result</h1>
+        <img src="{{ img_src }}" alt="Product Image">
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Product Information</h5>
+                <p class="card-text"><strong>Product Name:</strong> {{ prod_name }}</p>
+                <p class="card-text"><strong>Price:</strong> ₹{{ prod_price }}</p>
+                <p class="card-text"><strong>Features:</strong> {{ prod_features }}</p>
+            </div>
+        </div>
+
+        <!-- Add Shipping Charges Section for Amazon -->
+        {% if selected_option == 'amazon' %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Shipping Information</h5>
+                <p class="card-text">Amazon's shipping policies and charges vary. Please refer to Amazon's official website for detailed shipping information.</p>
+                <p class="card-text"><strong>Delivery Date:</strong> {{ shipping_details.delivery_date }}</p>
+                <p class="card-text"><strong>Delivery Condition:</strong> {{ shipping_details.delivery_condition }}</p>
+                <p class="card-text"><strong>Delivery Type:</strong> {{ shipping_details.delivery_type }}</p>
+                <!-- You can provide additional information or assumptions here -->
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Add Shipping Charges Section for Flipkart -->
+        {% if selected_option == 'flipkart' %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Shipping Charges</h5>
+                <!-- Display the shipping details -->
+                {% if shipping_details %}
+                <p class="card-text"><strong>Shipping Details:</strong> {{ shipping_details }}</p>
+                {% else %}
+                <p class="card-text">Shipping details not available.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <h5>Drip Pricing Detection</h5>
+            {% if drip_pricing_detected %}
+            <p class="text-danger">Potential drip pricing detected!</p>
+            {% else %}
+            <p class="text-success">No potential drip pricing detected.</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-4">
+            <h5>Actual Drip Pricing</h5>
+            {% if actual_drip_pricing_detected %}
+            <p class="text-danger">Actual drip pricing detected based on script attribute! Predicted price after drip
+                pricing: ₹{{ predicted_price }}</p>
+            {% else %}
+            <p class="text-success">No actual drip pricing detected based on script attribute. </p>
+            {% endif %}
+        </div>
+
+        <!-- Add Shipping Charges Section for eBay -->
+        {% if selected_option == 'ebay' %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Shipping Charges</h5>
+                <!-- Display the scraped HTML content here -->
+                <div data-testid="ux-labels-values" class="ux-labels-values col-12 ux-labels-values--shipping">
+                    {{ shipping_details | safe }}
+                </div>
+                <!-- Calculate Total Charges -->
+                {% if prod_price != "N/A" and shipping_details != "N/A" %}
+                {% set shipping_cost = shipping_details.split('$')[-1] | float %}
+                {% set total_charges = prod_price | float + shipping_cost %}
+                <p class="card-text mt-3"><strong>Total Charges:</strong> ${{ total_charges }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Display prod_url if available -->
+        {% if prod_url %}
+        <div class="mt-4">
+            <h5>Product URL</h5>
+            <p><a href="{{ prod_url }}" target="_blank">{{ prod_url }}</a></p>
+        </div>
+        {% endif %}
+
+        <!-- Iterate through content_list and create a div for each item -->
+        <div class="mt-4">
+            <h5>Content Information</h5>
+            {% if search_results %}
+            {% for result in search_results %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Search Result</h5>
+                    <p class="card-text"><strong>Source Name:</strong> {{ result.source_name }}</p>
+                    <p class="card-text"><strong>Source Link:</strong> <a href="{{ result.link }}" target="_blank">{{ result.link }}</a></p>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="mt-3">No search results available.</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-4">
+            <a href="/" class="btn btn-primary">Back</a>
+        </div>
+    </div>
+</body>
+
+</html>
